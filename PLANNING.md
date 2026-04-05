@@ -57,7 +57,7 @@ by a non-developer using Docker, and approachable enough for open source contrib
 
 ### New Review
 - [ ] Document title and description fields
-- [ ] File upload — accepts .docx and .pdf only, max 20MB
+- [ ] File upload — accepts `.md` only, max 1MB
 - [ ] Add SMEs — repeating name + email fields, add/remove dynamically
 - [ ] Deadline date picker
 - [ ] On submit: upload file, create document record, create SME assignments,
@@ -65,25 +65,42 @@ by a non-developer using Docker, and approachable enough for open source contrib
 
 ### Document Detail (TW view)
 - [ ] Document title, description, status badge, deadline
-- [ ] Download link for the uploaded file
+- [ ] Rendered markdown preview of the uploaded file with all SME inline comments
+      shown as annotations beside their referenced lines — page polls every 5 seconds
+      so the TW sees feedback appear in near real-time without refreshing
+- [ ] **Download reviewed file** button — always available once the document exists;
+      server assembles a modified `.md` file on demand: inline comments are injected
+      as blockquotes directly beneath the lines they reference
+      (`> **[SME Name]:** comment text`) and general notes are appended as a fenced
+      section at the end of the file. The stored source file is never modified —
+      the annotated copy is built fresh at download time. TW saves this to their
+      local repo, acts on the feedback, removes the annotations, and pushes to
+      GitHub manually.
 - [ ] SME response table: Name | Email | Status | Decision | Submitted At
 - [ ] Expandable row per SME showing general notes and inline comments
+      (each comment shows the line number it is anchored to)
 - [ ] Revision history timeline at the bottom of the page
 - [ ] Document status is derived automatically (see Status Logic below)
 
 ### SME Review Page (public, no auth)
 - [ ] Accessed via `/review/:token`
 - [ ] No app header or navigation — standalone page
+- [ ] On load: show a name confirmation screen — display the assigned SME name and
+      ask "Is this you?" with a Confirm button; the review UI is not shown until
+      confirmed. This prevents accidental submissions by someone who received the
+      link in error.
 - [ ] Shows document title and description
-- [ ] Download link for the document file
-- [ ] Inline comment builder:
-      - Section label field (e.g. "Page 2", "Step 3", "Introduction")
+- [ ] Rendered markdown preview of the document (read-only)
+- [ ] Inline comment builder — anchored to line numbers:
+      - SME clicks a line in the rendered markdown to select it (line number captured)
       - Comment text field
-      - Add Comment button
-      - List of added comments with ability to remove before submitting
+      - Add Comment button — saves comment to server immediately (no waiting for submit)
+      - Running list of the SME's own comments with line reference and Remove button
+- [ ] Comments saved incrementally so collaboration is live; TW sees them appear
+      in near real-time via polling on the Document Detail page
 - [ ] General notes textarea
 - [ ] Decision selector: Approve / Reject / Needs Changes
-- [ ] Submit button — disabled after submission
+- [ ] Submit button — finalises the review; disabled after submission
 - [ ] Confirmation message after successful submission
 - [ ] If token is invalid or already submitted, show appropriate message
 
@@ -156,7 +173,7 @@ CREATE TABLE sme_assignments (
 CREATE TABLE inline_comments (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   assignment_id INTEGER NOT NULL REFERENCES sme_assignments(id) ON DELETE CASCADE,
-  section_label TEXT NOT NULL,
+  line_number INTEGER NOT NULL,
   comment_text TEXT NOT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -182,12 +199,13 @@ CREATE TABLE revision_history (
 | POST   | /api/auth/login        | No   | Returns JWT token                  |
 
 ### Documents
-| Method | Route                  | Auth | Description                        |
-|--------|------------------------|------|------------------------------------|
-| GET    | /api/documents         | JWT  | List documents for logged-in TW    |
-| POST   | /api/documents         | JWT  | Upload file + create document      |
-| GET    | /api/documents/:id     | JWT  | Document detail + SMEs + history   |
-| DELETE | /api/documents/:id     | JWT  | Delete document and file           |
+| Method | Route                          | Auth | Description                              |
+|--------|--------------------------------|------|------------------------------------------|
+| GET    | /api/documents                 | JWT  | List documents for logged-in TW          |
+| POST   | /api/documents                 | JWT  | Upload file + create document            |
+| GET    | /api/documents/:id             | JWT  | Document detail + SMEs + history         |
+| DELETE | /api/documents/:id             | JWT  | Delete document and file                 |
+| GET    | /api/documents/:id/download    | JWT  | Stream annotated `.md` file on demand    |
 
 ### Reviews
 | Method | Route                  | Auth | Description                        |
@@ -195,10 +213,12 @@ CREATE TABLE revision_history (
 | POST   | /api/reviews           | JWT  | Assign SMEs, set deadline, send Slack |
 
 ### SME (no auth)
-| Method | Route                        | Auth | Description                    |
-|--------|------------------------------|------|--------------------------------|
-| GET    | /api/sme/:token              | No   | Get document info for this token |
-| POST   | /api/sme/:token/submit       | No   | Submit feedback and decision   |
+| Method | Route                        | Auth | Description                                        |
+|--------|------------------------------|----|------------------------------------------------------|
+| GET    | /api/sme/:token              | No   | Get document info and existing comments for token  |
+| POST   | /api/sme/:token/comment      | No   | Add a single inline comment (saved immediately)    |
+| DELETE | /api/sme/:token/comment/:id  | No   | Remove a comment before final submission           |
+| POST   | /api/sme/:token/submit       | No   | Finalise review — save decision and general notes  |
 
 ---
 
@@ -232,11 +252,15 @@ Webhook URL is set via SLACK_WEBHOOK_URL in .env.
 
 ## 9. File Handling
 
-- Accepted types: `.pdf`, `.docx` only
-- Max size: 20MB
+- Accepted types: `.md` only
+- Max size: 1MB
 - Stored at: `server/uploads/[uuid]-[original-filename]`
 - Served via Express static route: `GET /uploads/[filename]`
 - When a document is deleted, the file is also deleted from disk
+- **Annotated download** (`GET /api/documents/:id/download`) — assembled on demand,
+  never written to disk; server reads the source `.md`, injects inline comments as
+  blockquotes beneath their referenced lines, appends general notes at the end,
+  and streams the result as a file download
 
 ---
 
@@ -261,139 +285,157 @@ tested and working. State which phase you are on at the start of each session.
 
 ---
 
-### Phase 1 — Backend Foundation
+### Phase 1 — Backend Foundation ✅
 **Goal:** A running Express server with a working database and auth.
 
-- [ ] Initialize `server/` with `npm init`, install dependencies:
-      `express`, `better-sqlite3`, `jsonwebtoken`, `bcrypt`, `uuid`,
+- [x] Initialize `server/` with `npm init`, install dependencies:
+      `express`, `better-sqlite3`, `jsonwebtoken`, `bcryptjs`, `uuid`,
       `multer`, `cors`, `dotenv`
-- [ ] Create `server/db/schema.sql` with all tables
-- [ ] Create `server/db/database.js` — opens SQLite connection, runs schema on startup
-- [ ] Create `server/index.js` — Express app, loads env, mounts routes
-- [ ] Create `server/routes/auth.js` — register and login routes
-- [ ] Create `server/middleware/auth.js` — JWT verification middleware
-- [ ] Test: register a user, log in, receive a JWT
+- [x] Create `server/db/schema.sql` with all tables
+- [x] Create `server/db/database.js` — opens SQLite connection, runs schema on startup
+- [x] Create `server/index.js` — Express app, loads env, mounts routes
+- [x] Create `server/routes/auth.js` — register and login routes
+- [x] Create `server/middleware/auth.js` — JWT verification middleware
+- [x] Test: register a user, log in, receive a JWT
 
 ---
 
-### Phase 2 — Document Upload
+### Phase 2 — Document Upload ✅
 **Goal:** TWs can upload files and create document records.
 
-- [ ] Create `server/routes/documents.js`
-- [ ] `POST /api/documents` — multer handles file upload, saves to `server/uploads/`,
+- [x] Create `server/routes/documents.js`
+- [x] `POST /api/documents` — multer handles file upload, saves to `server/uploads/`,
       creates document record in DB, logs to revision_history
-- [ ] `GET /api/documents` — returns all documents for the authenticated TW
-- [ ] `GET /api/documents/:id` — returns document + SME assignments + revision history
-- [ ] `DELETE /api/documents/:id` — deletes DB record and file from disk
-- [ ] Serve uploads statically: `app.use('/uploads', express.static('uploads'))`
-- [ ] Test: upload a file, retrieve it, delete it
+- [x] `GET /api/documents` — returns all documents for the authenticated TW
+- [x] `GET /api/documents/:id` — returns document + SME assignments + revision history
+- [x] `DELETE /api/documents/:id` — deletes DB record and file from disk
+- [x] `GET /api/documents/:id/download` — reads source `.md` from disk, injects
+      inline comments as blockquotes beneath their line numbers, appends general
+      notes section, streams result as a `.md` file download
+- [x] Serve uploads statically: `app.use('/uploads', express.static('uploads'))`
+- [x] Test: upload a file, retrieve it, download annotated version, delete it
 
 ---
 
-### Phase 3 — Reviews and SME System
+### Phase 3 — Reviews and SME System ✅
 **Goal:** TWs can assign SMEs, SMEs can submit feedback.
 
-- [ ] Create `server/routes/reviews.js`
-- [ ] `POST /api/reviews` — accepts document_id, deadline, array of SMEs (name + email);
+- [x] Create `server/routes/reviews.js`
+- [x] `POST /api/reviews` — accepts document_id, deadline, array of SMEs (name + email);
       creates sme_assignment rows with UUID tokens; triggers Slack per SME;
       updates document status to 'In Review'; logs to revision_history
-- [ ] Create `server/slack.js` — exports a `sendSlackNotification(sme, document, twName)` function;
+- [x] Create `server/slack.js` — exports a `sendSlackNotification(sme, document, twName)` function;
       skips silently if SLACK_WEBHOOK_URL not set
-- [ ] Create `server/routes/sme.js`
-- [ ] `GET /api/sme/:token` — returns document info and assignment for this token;
-      returns 404 if token not found
-- [ ] `POST /api/sme/:token/submit` — saves decision, general notes, inline comments;
-      marks assignment as Submitted; recalculates and updates document status;
+- [x] Create `server/routes/sme.js`
+- [x] `GET /api/sme/:token` — returns document info, file content, and any comments
+      already saved by this SME; returns 404 if token not found
+- [x] `POST /api/sme/:token/comment` — saves a single inline comment (line_number +
+      comment_text) immediately; returns the saved comment with its id
+- [x] `DELETE /api/sme/:token/comment/:id` — removes a comment (only if assignment
+      not yet submitted)
+- [x] `POST /api/sme/:token/submit` — saves decision and general notes; marks
+      assignment as Submitted; recalculates and updates document status;
       logs to revision_history
-- [ ] Write status recalculation as a reusable function in a shared utility file
-- [ ] Test full flow: create review → get magic link → submit feedback → verify status update
+- [x] Write status recalculation as a reusable function in a shared utility file
+- [x] Test full flow: create review → get magic link → submit feedback → verify status update
 
 ---
 
-### Phase 4 — Frontend Scaffold
+### Phase 4 — Frontend Scaffold ✅
 **Goal:** React app running with routing and auth context.
 
-- [ ] Initialize `client/` with `npm create vite@latest` (React, JavaScript)
-- [ ] Install dependencies: `react-router-dom`
-- [ ] Set up React Router in `App.jsx` with all routes from Section 10
-- [ ] Create auth context (`src/context/AuthContext.jsx`):
+- [x] Initialize `client/` with `npm create vite@latest` (React, JavaScript)
+- [x] Install dependencies: `react-router-dom`
+- [x] Set up React Router in `App.jsx` with all routes from Section 10
+- [x] Create auth context (`src/context/AuthContext.jsx`):
       stores JWT in localStorage, provides login/logout functions, exposes current user
-- [ ] Create a `ProtectedRoute` component that redirects to /login if not authenticated
-- [ ] Create placeholder page components for all routes
-- [ ] Configure Vite proxy so `/api` requests go to `http://localhost:3001` in dev
-- [ ] Test: app loads, login redirects work, JWT persists across page refresh
+- [x] Create a `ProtectedRoute` component that redirects to /login if not authenticated
+- [x] Create placeholder page components for all routes
+- [x] Configure Vite proxy so `/api` requests go to `http://localhost:3001` in dev
+- [x] Test: app loads, login redirects work, JWT persists across page refresh
 
 ---
 
-### Phase 5 — TW Frontend Pages
+### Phase 5 — TW Frontend Pages ✅
 **Goal:** TWs can use the app to manage documents and reviews.
 
-- [ ] **Login page** — email + password form, calls `/api/auth/login`, stores JWT
-- [ ] **Register page** — name + email + password form
-- [ ] **Dashboard page** — fetches and displays document list with status badges,
+- [x] **Login page** — email + password form, calls `/api/auth/login`, stores JWT
+- [x] **Register page** — name + email + password form
+- [x] **Dashboard page** — fetches and displays document list with status badges,
       SME response counts, deadline indicators (overdue in red, due soon in yellow)
-- [ ] **New Review page** — title, description, file input, dynamic SME list
+- [x] **New Review page** — title, description, file input, dynamic SME list
       (add/remove rows), deadline picker; submits to `POST /api/documents` then
       `POST /api/reviews`
-- [ ] **Document Detail page** — document info, SME table with expandable rows
+- [x] **Document Detail page** — document info, SME table with expandable rows
       showing notes and inline comments, revision history timeline
 
 ---
 
-### Phase 6 — SME Frontend Page
+### Phase 6 — SME Frontend Page ✅
 **Goal:** SMEs can access and complete their review via magic link.
 
-- [ ] **SME Review page** (`/review/:token`)
-- [ ] On load: fetch `GET /api/sme/:token`; show error if invalid token
-- [ ] Show document title, description, and download link
-- [ ] Inline comment builder:
-      - Section label input + comment text input
-      - Add Comment button appends to local list
-      - Rendered comment list with Remove button per item
-- [ ] General notes textarea
-- [ ] Decision button group: Approve / Reject / Needs Changes
-- [ ] Submit button: posts to `POST /api/sme/:token/submit`
-- [ ] After submit: replace form with a thank-you confirmation message
-- [ ] If assignment already submitted: show read-only confirmation on page load
+- [x] **SME Review page** (`/review/:token`)
+- [x] On load: fetch `GET /api/sme/:token`; show error if invalid token
+- [x] Name confirmation screen — "Is this you?" with confirm and "That's not me" paths;
+      "That's not me" calls `POST /api/sme/:token/wrong-person` which fires Slack alert
+      to the TW and shows a "we've notified them" message
+- [x] Render the markdown document line-by-line in a code-editor style (dark theme,
+      monospace, line numbers) — plain text, no HTML rendering
+- [x] Clicking a line highlights it and opens an inline comment input anchored to
+      that line number
+- [x] Confirming the comment posts to `POST /api/sme/:token/comment` immediately
+      and inserts the saved comment visually beneath the line
+- [x] Each comment has a Remove button that calls `DELETE /api/sme/:token/comment/:id`
+- [x] General notes textarea
+- [x] Decision button group: Approve / Reject / Needs Changes
+- [x] Submit button: posts decision + general notes to `POST /api/sme/:token/submit`;
+      disabled until a decision is selected
+- [x] After submit: replace form with a thank-you confirmation message
+- [x] If assignment already submitted: show read-only view with their comments on load
 
 ---
 
-### Phase 7 — Docker & Open Source Readiness
+### Phase 7 — Docker & Open Source Readiness ✅
 **Goal:** Anyone can clone the repo and run the app with one command.
 
-- [ ] Write `server/Dockerfile`
-- [ ] Write `client/Dockerfile` (build React app, serve with nginx)
-- [ ] Write `docker-compose.yml`:
-      - `server` service — builds server, exposes port 3001
-      - `client` service — builds client, exposes port 80
+- [x] Write `server/Dockerfile`
+- [x] Write `client/Dockerfile` (build React app, serve with nginx)
+- [x] Write `docker-compose.yml`:
+      - `server` service — builds server, exposes port 3001 internally only
+      - `client` service — builds client, exposes port 80 via nginx
       - Named volume for `server/uploads/` so files persist
       - Named volume for `server/db/` so SQLite persists
-      - Both services read from `.env`
-- [ ] Write `.env.example` with every variable documented inline
-- [ ] Write `README.md`:
+      - Both services read from `.env` via env_file
+- [x] Write `.env.example` with every variable documented inline
+- [x] Write `README.md`:
       - What the app does (2–3 sentences)
       - Prerequisites (Docker + Docker Compose)
       - Setup instructions (clone → copy .env → docker compose up)
       - Slack webhook setup steps
       - How to access the app
       - How to back up data (copy the two volume directories)
-      - Screenshot or two (add later)
-- [ ] Test: fresh clone on a clean machine or VM, follow README only,
-      confirm app works end to end
+- [x] Write `client/nginx.conf` — proxies /api and /uploads to server, serves
+      React app with try_files fallback for client-side routing
+- [x] Write `.gitignore`
+- [x] Add server/.dockerignore and client/.dockerignore
 
 ---
 
-### Phase 8 — Polish & Hardening
+### Phase 8 — Polish & Hardening ✅
 **Goal:** App is robust and ready to share.
 
-- [ ] Frontend form validation with clear error messages
-- [ ] Backend input validation on all routes (check required fields, file type, size)
-- [ ] Loading states on all async operations
-- [ ] Empty states on dashboard (first-time user sees a helpful prompt, not a blank table)
-- [ ] 404 page for unknown routes
-- [ ] Invalid/expired token page for SME link errors
-- [ ] Confirm dialog before deleting a document
-- [ ] Test the full end-to-end workflow manually before publishing
+- [x] Frontend form validation with clear error messages — partial SME rows caught,
+      file type validated client-side, all forms show server errors inline
+- [x] Backend input validation on all routes — email format regex on auth + reviews,
+      blank name check, file type/size enforced by multer, decision enum validated
+- [x] Loading states on all async operations — including download button ("Preparing…")
+- [x] Empty states on dashboard — first-time user sees prompt with link to new review
+- [x] 404 page for unknown routes — NotFound.jsx with catch-all route in App.jsx
+- [x] Invalid/expired token page for SME link errors — SMEReview shows error screen
+- [x] Confirm dialog before deleting a document — inline confirm/cancel in DocumentDetail
+- [x] try/catch guard added to wrong-person route
+- [x] End-to-end smoke test passed: register → upload → assign SME → comment →
+      submit → download annotated file
 
 ---
 

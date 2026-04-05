@@ -1,0 +1,454 @@
+/* ── Centred message screens ── */
+
+.centerMessage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #64748b;
+  font-size: 15px;
+}
+
+.errorText {
+  color: #dc2626;
+}
+
+/* ── Confirmation / wrong-person / thank-you screens ── */
+
+.confirmPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.confirmCard {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 40px 48px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+}
+
+.confirmTitle {
+  font-size: 22px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+.confirmQuestion {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.confirmName {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.confirmSubtext {
+  font-size: 14px;
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+.confirmButtons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.yesBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 11px;
+  border-radius: 6px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.yesBtn:hover {
+  background: #1d4ed8;
+}
+
+.noBtn {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.noBtn:hover:not(:disabled) {
+  border-color: #94a3b8;
+}
+
+.noBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirmFrom {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.wrongIcon {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+/* ── Main review page ── */
+
+.page {
+  min-height: 100vh;
+  background: #1e1e1e;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #d4d4d4;
+}
+
+.pageHeader {
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid #2d2d2d;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.docTitle {
+  font-size: 18px;
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: 4px;
+}
+
+.docDescription {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 4px;
+}
+
+.deadline {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.hint {
+  font-size: 12px;
+  color: #4b5563;
+  white-space: nowrap;
+  flex-shrink: 0;
+  padding-top: 4px;
+}
+
+/* ── Editor + sidebar layout ── */
+
+.layout {
+  display: flex;
+  align-items: flex-start;
+  height: calc(100vh - 80px);
+}
+
+.editorWrapper {
+  flex: 1;
+  overflow-y: auto;
+  height: 100%;
+  border-right: 1px solid #2d2d2d;
+}
+
+/* ── Code editor ── */
+
+.editor {
+  padding: 12px 0;
+}
+
+.lineGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.line {
+  display: flex;
+  align-items: baseline;
+  padding: 1px 0;
+  min-height: 22px;
+  user-select: none;
+}
+
+.lineClickable:hover {
+  background: #2a2a2a;
+  cursor: pointer;
+}
+
+.lineActive {
+  background: #2c3a52 !important;
+}
+
+.lineNumber {
+  width: 52px;
+  min-width: 52px;
+  text-align: right;
+  padding-right: 20px;
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 13px;
+  color: #4b5563;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.lineContent {
+  font-family: 'Consolas', 'Monaco', 'Menlo', 'Courier New', monospace;
+  font-size: 13px;
+  color: #d4d4d4;
+  white-space: pre;
+  flex: 1;
+  padding-right: 24px;
+}
+
+/* ── Inline comment bubble ── */
+
+.commentBubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 2px 0 2px 52px;
+  padding: 6px 12px;
+  background: #1a2e40;
+  border-left: 3px solid #2563eb;
+  border-radius: 0 4px 4px 0;
+}
+
+.commentText {
+  font-size: 12px;
+  color: #93c5fd;
+  flex: 1;
+  line-height: 1.5;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.removeCommentBtn {
+  background: none;
+  border: none;
+  color: #4b5563;
+  cursor: pointer;
+  font-size: 11px;
+  padding: 1px 3px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.removeCommentBtn:hover {
+  color: #f87171;
+}
+
+/* ── Inline comment input ── */
+
+.commentInput {
+  margin: 4px 0 4px 52px;
+  padding: 10px 12px;
+  background: #252526;
+  border: 1px solid #2563eb;
+  border-radius: 4px;
+}
+
+.commentTextarea {
+  width: 100%;
+  background: transparent;
+  border: none;
+  color: #d4d4d4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+}
+
+.commentTextarea::placeholder {
+  color: #4b5563;
+}
+
+.commentInputActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.saveCommentBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.saveCommentBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.saveCommentBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.cancelCommentBtn {
+  background: none;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.cancelCommentBtn:hover {
+  border-color: #6b7280;
+}
+
+/* ── Sidebar ── */
+
+.sidebar {
+  width: 300px;
+  min-width: 300px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  height: 100%;
+  background: #252526;
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sidebarLabel {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+}
+
+.notesTextarea {
+  background: #1e1e1e;
+  border: 1px solid #374151;
+  border-radius: 4px;
+  color: #d4d4d4;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 13px;
+  padding: 8px 10px;
+  resize: vertical;
+  outline: none;
+  line-height: 1.5;
+}
+
+.notesTextarea:focus {
+  border-color: #2563eb;
+}
+
+.notesTextarea::placeholder {
+  color: #4b5563;
+}
+
+/* ── Decision buttons ── */
+
+.decisionGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.decisionBtn {
+  background: #1e1e1e;
+  border: 1px solid #374151;
+  color: #9ca3af;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.1s, color 0.1s;
+}
+
+.decisionBtn:hover {
+  border-color: #6b7280;
+  color: #d4d4d4;
+}
+
+.decisionApprove {
+  border-color: #16a34a;
+  background: #052e16;
+  color: #4ade80;
+}
+
+.decisionNeedsChanges {
+  border-color: #d97706;
+  background: #1c1000;
+  color: #fbbf24;
+}
+
+.decisionReject {
+  border-color: #dc2626;
+  background: #2a0000;
+  color: #f87171;
+}
+
+/* ── Submit ── */
+
+.submitBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: #1d4ed8;
+}
+
+.submitBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.submitHint {
+  font-size: 11px;
+  color: #4b5563;
+  text-align: center;
+}
+
+.submitError {
+  font-size: 12px;
+  color: #f87171;
+}
