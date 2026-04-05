@@ -1,0 +1,15 @@
+# Environment
+.env
+
+# Dependencies
+node_modules/
+client/node_modules/
+server/node_modules/
+
+# Build output
+client/dist/
+
+# Database and uploads (runtime data — not committed)
+server/db/database.sqlite
+server/uploads/*
+!server/uploads/.gitkeep

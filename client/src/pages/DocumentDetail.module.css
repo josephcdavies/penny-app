@@ -1,0 +1,284 @@
+.state      { color: #64748b; }
+.stateError { color: #dc2626; }
+
+.topBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.titleRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.downloadBtn {
+  background: #2563eb;
+  color: #fff;
+  border: none;
+  padding: 7px 14px;
+  border-radius: 5px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.downloadBtn:hover {
+  background: #1d4ed8;
+}
+
+.deleteBtn {
+  background: none;
+  border: 1px solid #fca5a5;
+  color: #dc2626;
+  padding: 6px 12px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.deleteBtn:hover {
+  background: #fee2e2;
+}
+
+.confirmRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.confirmYes {
+  background: #dc2626;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.confirmYes:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.confirmNo {
+  background: none;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-size: 13px;
+}
+
+.description {
+  color: #475569;
+  margin-bottom: 16px;
+}
+
+.meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  font-size: 13px;
+  margin-bottom: 28px;
+  max-width: 400px;
+}
+
+.meta dt {
+  font-weight: 500;
+  color: #64748b;
+}
+
+.meta dd {
+  color: #1a1a1a;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 28px 0 12px;
+}
+
+.empty {
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 14px;
+}
+
+.table th,
+.table td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.table th {
+  background: #f8fafc;
+  font-weight: 500;
+  color: #475569;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.smeRow {
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+
+.smeRow:hover {
+  background: #f8fafc;
+}
+
+.smeStatus {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+
+.submitted { background: #dcfce7; color: #15803d; }
+.pending   { background: #f1f5f9; color: #475569; }
+
+.expand {
+  color: #94a3b8;
+  font-size: 11px;
+  text-align: right;
+}
+
+.detailRow td {
+  padding: 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.detailContent {
+  background: #f8fafc;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.commentSection {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detailLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.commentList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.commentItem {
+  font-size: 13px;
+  color: #374151;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.lineTag {
+  background: #dbeafe;
+  color: #1d4ed8;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.generalNotes {
+  font-size: 13px;
+  color: #374151;
+  white-space: pre-wrap;
+}
+
+.noDetail {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Timeline */
+.timeline {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-left: 2px solid #e2e8f0;
+  margin-left: 8px;
+  padding-left: 20px;
+  padding-bottom: 8px;
+}
+
+.timelineItem {
+  position: relative;
+  padding-bottom: 18px;
+}
+
+.timelineItem:last-child {
+  padding-bottom: 0;
+}
+
+.timelineDot {
+  position: absolute;
+  left: -27px;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #2563eb;
+  border: 2px solid #fff;
+  outline: 2px solid #2563eb;
+}
+
+.timelineDesc {
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.timelineMeta {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}

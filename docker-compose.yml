@@ -1,0 +1,22 @@
+services:
+  server:
+    build: ./server
+    env_file: .env
+    environment:
+      - PORT=3001
+    volumes:
+      - uploads:/app/uploads
+      - db:/app/db
+    restart: unless-stopped
+
+  client:
+    build: ./client
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    restart: unless-stopped
+
+volumes:
+  uploads:
+  db:
