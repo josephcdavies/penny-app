@@ -1,3 +1,4 @@
+# Used for standalone client development only. Production uses server/Dockerfile.
 FROM node:20-alpine AS build
 
 WORKDIR /app
