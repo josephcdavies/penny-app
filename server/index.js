@@ -79,7 +79,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // SPA catch-all — must stay after all API routes
-app.get('*', (req, res) => {
+app.get('/{*path}', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
